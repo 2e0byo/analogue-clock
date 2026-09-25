@@ -10,8 +10,13 @@
       default = pkgs.mkShell {
         packages = with pkgs;[
           ruff
-          (python3.withPackages (ps: [ps.ipython]))
+          kicad
+          (python3.withPackages (ps: [ps.ipython ps.skidl]))
         ];
+        env = {
+          KICAD_SYMBOL_DIR = "${pkgs.kicad.libraries.symbols}/share/kicad/symbols";
+          KICAD10_SYMBOL_DIR = "${pkgs.kicad.libraries.symbols}/share/kicad/symbols";
+        };
       };
     }) inputs.nixpkgs.legacyPackages;
   };
