@@ -1,91 +1,12 @@
-from itertools import chain
 import math
-from math import pi
-from functools import partial
-from types import NotImplementedType
-from typing import Self, Callable, Any, overload, Literal
-import cmath
-from numbers import Complex
+from collections.abc import Callable
 from dataclasses import dataclass
-from pathlib import Path
+from functools import partial
+from itertools import chain
+from math import pi
+from typing import Literal, Self
 
-
-@dataclass
-class Point:
-    """A point in normal cartesian space with the origin at the bottom left."""
-
-    inner: complex
-
-    @classmethod
-    def new(cls, x: float, y: float) -> Self:
-        return cls(complex(x, y))
-
-    def x(self) -> float:
-        return self.inner.real
-
-    def y(self) -> float:
-        return self.inner.imag
-
-    def __add__(self, other: Point) -> Point:
-        return Point(self.inner + other.inner)
-
-    def to_graphics_point(self, canvas_height: float) -> GraphicsPoint:
-        return GraphicsPoint.new(self.x(), canvas_height - self.y())
-
-
-@dataclass
-class GraphicsPoint:
-    """A point in graphics space, with the origin at the top left."""
-
-    inner: complex
-
-    @classmethod
-    def new(cls, x: float, y: float) -> Self:
-        return cls(complex(x, y))
-
-    def x(self) -> float:
-        return self.inner.real
-
-    def y(self) -> float:
-        return self.inner.imag
-
-    def __add__(self, other: GraphicsPoint) -> GraphicsPoint:
-        return GraphicsPoint(self.inner + other.inner)
-
-
-@dataclass
-class Polar:
-    r: float
-    theta: float
-
-    def to_cartesian(self) -> Point:
-        return Point(cmath.rect(self.r, self.theta))
-
-    @classmethod
-    def from_cartesian(cls, point: Point) -> Self:
-        return cls(*cmath.polar(point.inner))
-
-    def extend(self, incr: float) -> Self:
-        return type(self)(self.r + incr, self.theta)
-
-    def rotate(self, angle: float) -> Self:
-        return type(self)(self.r, self.theta + angle)
-
-    def relative_to(self, origin: Point) -> Point:
-        return self.to_cartesian() + origin
-        # return (Polar.from_cartesian(origin) + self).to_cartesian()
-
-    @overload
-    def __add__(self, other: Polar) -> Polar: ...
-
-    @overload
-    def __add__(self, other: Any) -> NotImplementedType: ...
-
-    def __add__(self, other: Any) -> "Polar" | NotImplementedType:
-        if not isinstance(other, Polar):
-            return NotImplemented
-        else:
-            return Polar(self.r + other.r, self.theta + other.theta)
+from .coordinate import Point, Polar
 
 
 @dataclass(kw_only=True)
@@ -523,7 +444,7 @@ img = [
     mkmoon(translate=start.extend(Mm(-15).px()).relative_to(meter_center)),
     mksun(translate=start.extend(Mm(34).px()).relative_to(meter_center)),
     ## ticks
-    *chain.from_iterable(ticks(x) for x in range(0, 12)),
+    *chain.from_iterable(ticks(x) for x in range(12)),
     major_tick(start=start.rotate(12 * step)),
     ## text
     number(12, 0 * step, opacity=0.5),
@@ -531,7 +452,6 @@ img = [
     number(6, 6 * step),
     number(9, 9 * step),
     number(12, 12 * step),
-    #
     Band(
         start=start.extend(Mm(7).px()),
         end=start.extend(Mm(7).px()).rotate(8 * step),
@@ -548,7 +468,6 @@ img = [
         style="fill:url(#bar-gradient-2)",
         stroke="none",
     ),
-    #
     Arc(
         stroke="none",
         start=start.rotate(-step * 2),
@@ -565,7 +484,6 @@ img = [
         id="futureLabel",
     ),
     TextPath(text="FUTURE", href="#futureLabel", side="left"),
-    #
     Arc(
         start=start.extend(Mm(7.5).px()).rotate(1 * step),
         end=start.extend(Mm(7.5).px()).rotate(8 * step),
