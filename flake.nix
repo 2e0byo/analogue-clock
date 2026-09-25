@@ -11,6 +11,7 @@
         packages = with pkgs;[
           ruff
           kicad
+          prek
           (python3.withPackages (ps: [ps.ipython ps.skidl]))
         ];
         env = {
