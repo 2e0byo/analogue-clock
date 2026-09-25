@@ -70,7 +70,7 @@ mkmoon = partial(
          A 12,17 0 0 1 8,-16 Z"
  fill="none" stroke="black" stroke-width="1.8"/>
     """,
-    rotate=Deg.from_rad(start.theta / 2) - Deg(7),
+    rotate=Deg.from_rad(-start.theta / 2) - Deg(7),
 )
 
 flat = Polar(150, 0)
