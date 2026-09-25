@@ -7,6 +7,7 @@ from math import pi
 from typing import Literal, Self
 
 from .coordinate import Point, Polar
+from .units import Deg, Mm
 
 
 @dataclass(kw_only=True)
@@ -26,7 +27,7 @@ class Text(Element):
     size: float = 30
     weight: float = 500
     # rotate: list[float] | None = None
-    rotate: float | None = None
+    rotate: Deg | None = None
     anchor: str = "left"
 
     @classmethod
@@ -36,7 +37,7 @@ class Text(Element):
     def render(self, canvas_height: float) -> str:
         pt = self.point.to_graphics_point(canvas_height)
         rotate = (
-            f'transform="rotate({self.rotate} {pt.x()} {pt.y()})"'
+            f'transform="rotate({self.rotate.val} {pt.x()} {pt.y()})"'
             if self.rotate
             else ""
         )
@@ -95,7 +96,7 @@ class Raw:
     tags: str | None = None
     type: str = "g"
     translate: Point | None = None
-    rotate: float | None = None
+    rotate: Deg | None = None
 
     def render(self, canvas_height: float) -> str:
         transforms = []
@@ -103,7 +104,7 @@ class Raw:
             pt = pt.to_graphics_point(canvas_height)
             transforms.append(f"translate({pt.x()} {pt.y()})")
         if self.rotate:
-            transforms.append(f"rotate({self.rotate})")
+            transforms.append(f"rotate({self.rotate.val})")
         transform = f'transform="{" ".join(transforms)}"' if transforms else ""
 
         return f"""\
@@ -313,19 +314,6 @@ def polarise_arc(width: float, rise: float) -> tuple[Polar, Polar]:
 
 
 @dataclass
-class Mm:
-    val: float
-
-    def px(self) -> float:
-        # SVGs are 96 DPI = 96 px per 25.4 mm
-        return 96 * self.val / 25.4
-
-
-def degrees(radians: float) -> float:
-    return 360 * radians / 2 * pi
-
-
-@dataclass
 class Canvas:
     width: float
     height: float
@@ -377,7 +365,7 @@ mkmoon = partial(
          A 12,17 0 0 1 8,-16 Z"
  fill="none" stroke="black" stroke-width="1.8"/>
     """,
-    rotate=degrees(start.theta / 2) - 7,
+    rotate=Deg.from_rad(start.theta / 2) - Deg(7),
 )
 
 flat = Polar(150, 0)
@@ -416,8 +404,13 @@ def number(val: int | str, rotation: float, **kwargs) -> Text:
     rise = Mm(15).px()
     point = start.extend(rise).rotate(rotation).relative_to(meter_center)
     angle_from_vertical = (pi / 2) - start.rotate(rotation).theta
-    degrees = 180 * angle_from_vertical / pi
-    return Text(text=str(val), point=point, anchor="middle", rotate=degrees, **kwargs)
+    return Text(
+        text=str(val),
+        point=point,
+        anchor="middle",
+        rotate=Deg.from_rad(angle_from_vertical),
+        **kwargs,
+    )
 
 
 img = [
@@ -518,20 +511,10 @@ img = [
     Line.on_radial(
         meter_center,
         start.rotate(step * 0.1).extend(-Mm(90).px()),
-        # Polar(Mm(30).px(), start.theta + 5.6 * step),
         Mm(93).px(),
     ),
 ]
 
-# mksun(translate=flat.rotate(1 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(2 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(3 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(4 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(5 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(6 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(7 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(8 * pi / 5).relative_to(center)),
-# mksun(translate=flat.rotate(9 * pi / 5).relative_to(center)),
 
 FOOTER = """\
 </svg>
@@ -546,9 +529,6 @@ def render() -> str:
             FOOTER,
         ]
     )
-
-
-# TODO TEXTPATH
 
 
 if __name__ == "__main__":
