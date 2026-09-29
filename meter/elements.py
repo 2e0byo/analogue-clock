@@ -94,6 +94,7 @@ class Raw:
     type: str = "g"
     translate: Point | None = None
     rotate: Deg | None = None
+    scale: float | None = None
 
     def render(self, canvas_height: float) -> str:
         transforms = []
@@ -102,6 +103,8 @@ class Raw:
             transforms.append(f"translate({pt.x()} {pt.y()})")
         if self.rotate:
             transforms.append(f"rotate({self.rotate.val})")
+        if self.scale:
+            transforms.append(f"scale({self.scale})")
         transform = f'transform="{" ".join(transforms)}"' if transforms else ""
 
         return f"""\

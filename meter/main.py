@@ -13,12 +13,34 @@ from .elements import (
     Defs,
     Line,
     Raw,
-    Text,
-    TextPath,
 )
-from .units import Deg, Mm
+from .elements import (
+    Text as _Text,
+)
+from .elements import (
+    TextPath as _TextPath,
+)
+from .units import Deg
+from .units import Mm as _Mm
 
 type Renderer = Callable[[float], str]
+
+
+class Mm(_Mm):
+    def __init__(self, val: float) -> None:
+        self.val = val * scale
+
+
+class Text(_Text):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.size *= scale
+
+
+class TextPath(_TextPath):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.size *= scale
 
 
 def polarise_arc(width: float, rise: float) -> tuple[Polar, Polar]:
@@ -35,6 +57,8 @@ def polarise_arc(width: float, rise: float) -> tuple[Polar, Polar]:
 
     return Polar(r, pi - half_theta), Polar(r, half_theta)
 
+
+scale = 0.55
 
 canvas = Canvas(round(Mm(235).px()), round(Mm(181).px()))
 
@@ -60,6 +84,7 @@ mksun = partial(
   <line x1="12" y1="12" x2="18" y2="18"/>
 </g>
 """,
+    scale=scale,
 )
 mkmoon = partial(
     Raw,
@@ -71,6 +96,7 @@ mkmoon = partial(
  fill="none" stroke="black" stroke-width="1.8"/>
     """,
     rotate=Deg.from_rad(-start.theta / 2) - Deg(7),
+    scale=scale,
 )
 
 flat = Polar(150, 0)
