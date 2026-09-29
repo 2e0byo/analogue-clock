@@ -239,11 +239,11 @@ img = [
         right_arrowhead=ArrowHeadConfig(length=Mm(3).px(), width=Mm(2).px()),
     ),
     # fake hand for now
-    Line.on_radial(
-        meter_center,
-        start.rotate(step * 0.1).extend(-Mm(90).px()),
-        Mm(93).px(),
-    ),
+    # Line.on_radial(
+    #     meter_center,
+    #     start.rotate(step * 0.1).extend(-Mm(90).px()),
+    #     Mm(93).px(),
+    # ),
 ]
 
 
